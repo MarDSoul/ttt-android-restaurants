@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Restaurants</string>
+    <string name="list_app_bar_title">Рестораны</string>
+    <string name="details_app_bar_title">Ресторан</string>
+    <string name="navigate_back_cd">Назад</string>
 </resources>
