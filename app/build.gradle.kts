@@ -1,9 +1,15 @@
+import java.util.Properties
+
 plugins {
 	alias(libs.plugins.android.application)
 	alias(libs.plugins.jetbrains.kotlin.android)
 	alias(libs.plugins.hilt)
 	alias(libs.plugins.ksp)
 }
+
+val apikey = rootProject.file("apikey.properties")
+val apikeyProperties = Properties()
+apikeyProperties.load(apikey.inputStream())
 
 android {
 	namespace = "ttt.mardsoul.restaurants"
@@ -16,10 +22,7 @@ android {
 		versionCode = 1
 		versionName = "1.0"
 
-		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-		vectorDrawables {
-			useSupportLibrary = true
-		}
+		buildConfigField("String", "TOKEN", apikeyProperties.getProperty("TOKEN"))
 	}
 
 	buildTypes {
@@ -40,6 +43,7 @@ android {
 	}
 	buildFeatures {
 		compose = true
+		buildConfig = true
 	}
 	composeOptions {
 		kotlinCompilerExtensionVersion = "1.5.14"
@@ -56,6 +60,7 @@ dependencies {
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.activity.compose)
+	implementation(libs.androidx.lifecycle.viewmodel)
 
 	implementation(platform(libs.androidx.compose.bom))
 	implementation(libs.androidx.ui)
@@ -69,6 +74,7 @@ dependencies {
 	ksp(libs.hilt.compiler)
 
 	implementation(libs.retrofit)
+	implementation(libs.retrofit.converter)
 	implementation(libs.gson)
 	implementation(libs.coil)
 }
