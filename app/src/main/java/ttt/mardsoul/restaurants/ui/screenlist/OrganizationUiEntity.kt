@@ -1,4 +1,4 @@
-package ttt.mardsoul.restaurants.ui.uientities
+package ttt.mardsoul.restaurants.ui.screenlist
 
 import androidx.compose.runtime.Stable
 

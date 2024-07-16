@@ -1,4 +1,4 @@
-package ttt.mardsoul.restaurants.ui
+package ttt.mardsoul.restaurants.ui.screenlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ttt.mardsoul.restaurants.domain.Gateway
 import ttt.mardsoul.restaurants.domain.NetworkRespond
-import ttt.mardsoul.restaurants.ui.uientities.OrganizationUiEntity
+import ttt.mardsoul.restaurants.domain.RespondErrors
 import ttt.mardsoul.restaurants.utils.MapperModelToUi
 import javax.inject.Inject
 
@@ -29,13 +29,17 @@ class RestaurantsListViewModel @Inject constructor(
 		viewModelScope.launch {
 			_uiState.emit(ListUiState.Loading)
 			when (val respond = gateway.getRestaurants()) {
-				is NetworkRespond.Success -> {
+				is NetworkRespond.SuccessList -> {
 					val data = respond.data.map { MapperModelToUi.map(it) }
 					_uiState.emit(ListUiState.Success(data))
 				}
 
 				is NetworkRespond.Error -> {
 					_uiState.emit(ListUiState.Error(respond.errors.message))
+				}
+
+				else -> {
+					_uiState.emit(ListUiState.Error(RespondErrors.UNKNOWN_ERROR.message))
 				}
 			}
 		}

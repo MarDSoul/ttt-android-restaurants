@@ -3,13 +3,13 @@ package ttt.mardsoul.restaurants.data.dtoentities.detailsresponse
 
 import com.google.gson.annotations.SerializedName
 
-data class RestaurantDto(
+data class RespondDetailsDto(
 	@SerializedName("averageCheck")
 	val averageCheck: List<Any?>?,
 	@SerializedName("categoryName")
 	val categoryName: String?,
 	@SerializedName("cuisines")
-	val cuisines: List<Any?>?,
+	val cuisines: List<String?>?,
 	@SerializedName("detailedInfo")
 	val detailedInfo: String?,
 	@SerializedName("discount")

@@ -18,16 +18,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import ttt.mardsoul.restaurants.R
 import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
 
 @Composable
 fun RestaurantsApp(modifier: Modifier = Modifier) {
+	val navController = rememberNavController()
+
+	val currentScreen = RestaurantScreen.valueOf(
+		navController.currentBackStackEntry?.destination?.route ?: RestaurantScreen.ListScreen.name
+	)
+
 	Scaffold(
 		modifier = modifier,
-		topBar = { RestaurantsTopBar() }
+		topBar = {
+			RestaurantsTopBar(
+				currentScreen = currentScreen,
+				canNavigateBack = navController.previousBackStackEntry != null,
+				onNavigateBack = { navController.navigateUp() })
+		}
 	) { paddingValues ->
-		RestaurantsListScreen(modifier = Modifier.padding(paddingValues))
+		NavigationApp(modifier = Modifier.padding(paddingValues), navController = navController)
 	}
 }
 
@@ -35,12 +47,14 @@ fun RestaurantsApp(modifier: Modifier = Modifier) {
 @Composable
 fun RestaurantsTopBar(
 	modifier: Modifier = Modifier,
+	currentScreen: RestaurantScreen,
 	canNavigateBack: Boolean = false,
 	onNavigateBack: () -> Unit = {}
 ) {
+
 	CenterAlignedTopAppBar(
 		title = {
-			Text(text = stringResource(R.string.list_app_bar_title))
+			Text(text = stringResource(currentScreen.titleId))
 		},
 		modifier = modifier,
 		navigationIcon = {
@@ -73,7 +87,7 @@ fun FavouriteIcon(
 	Box(modifier = modifier, contentAlignment = Alignment.Center) {
 		Icon(
 			imageVector = Icons.Filled.Favorite,
-			contentDescription = null,
+			contentDescription = stringResource(R.string.favourite_cd),
 			tint = MaterialTheme.colorScheme.primary
 		)
 		Text(
@@ -96,6 +110,6 @@ fun FavouriteIconPreview(modifier: Modifier = Modifier) {
 @Composable
 fun RestaurantsTopBarPreview(modifier: Modifier = Modifier) {
 	RestaurantsTheme {
-		RestaurantsTopBar(canNavigateBack = true)
+		RestaurantsTopBar(currentScreen = RestaurantScreen.ListScreen)
 	}
 }

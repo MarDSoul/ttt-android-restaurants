@@ -5,6 +5,7 @@ plugins {
 	alias(libs.plugins.jetbrains.kotlin.android)
 	alias(libs.plugins.hilt)
 	alias(libs.plugins.ksp)
+	alias(libs.plugins.serialization)
 }
 
 val apikey = rootProject.file("apikey.properties")
@@ -77,4 +78,8 @@ dependencies {
 	implementation(libs.retrofit.converter)
 	implementation(libs.gson)
 	implementation(libs.coil)
+
+	implementation(libs.navigation.compose)
+	implementation(libs.hilt.navigation.compose)
+	implementation(libs.serialization.jetbrains)
 }

@@ -8,7 +8,7 @@ object MapperDtoToModel : Mapper<DataDto, OrganizationEntity> {
 		return OrganizationEntity(
 			id = from.id ?: 0,
 			name = from.name ?: "",
-			imageUrl = from.photo ?: "",
+			imageListUrl = listOf(from.photo ?: ""),
 			isFavorite = from.isFavorite ?: false,
 			rate = from.rate?.toFloat() ?: 0f,
 			description = if (!from.cuisines.isNullOrEmpty()) from.cuisines.joinToString(separator = ", ") else "",

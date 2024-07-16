@@ -81,7 +81,7 @@ fun RestaurantsTheme(
 	MaterialTheme(
 		colorScheme = colorScheme,
 		typography = Typography,
-		shapes = Shap,
+		shapes = shapes,
 		content = content
 	)
 }

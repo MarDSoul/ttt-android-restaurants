@@ -3,7 +3,8 @@ package ttt.mardsoul.restaurants.domain
 import ttt.mardsoul.restaurants.domain.entities.OrganizationEntity
 
 sealed class NetworkRespond {
-	class Success(val data: List<OrganizationEntity>) : NetworkRespond()
+	class SuccessList(val data: List<OrganizationEntity>) : NetworkRespond()
+	class SuccessDetails(val data: OrganizationEntity) : NetworkRespond()
 	class Error(val errors: RespondErrors) : NetworkRespond()
 }
 

@@ -8,6 +8,7 @@ import ttt.mardsoul.restaurants.di.IoDispatcher
 import ttt.mardsoul.restaurants.domain.Gateway
 import ttt.mardsoul.restaurants.domain.NetworkRespond
 import ttt.mardsoul.restaurants.domain.RespondErrors
+import ttt.mardsoul.restaurants.utils.MapperDetailsToModel
 import ttt.mardsoul.restaurants.utils.MapperDtoToModel
 import javax.inject.Inject
 
@@ -24,7 +25,7 @@ class GatewayImpl @Inject constructor(
 				if (networkResponse.isSuccessful && networkResponse.body() != null) {
 					networkResponse.body()!!.data
 						?.map { MapperDtoToModel.map(it!!) }
-						?.let { NetworkRespond.Success(it) }
+						?.let { NetworkRespond.SuccessList(it) }
 				} else {
 					NetworkRespond.Error(RespondErrors.SERVER_ERROR)
 				}
@@ -36,6 +37,24 @@ class GatewayImpl @Inject constructor(
 		return job.await()!!
 	}
 
+	override suspend fun getRestaurant(id: Int): NetworkRespond {
+		val job = applicationScope.async(dispatcherIo) {
+			try {
+				val networkResponse = api.getRestaurant(id)
+				if (networkResponse.isSuccessful && networkResponse.body() != null) {
+					networkResponse.body()!!
+						.let { MapperDetailsToModel.map(it) }
+						.let { NetworkRespond.SuccessDetails(it) }
+				} else {
+					NetworkRespond.Error(RespondErrors.SERVER_ERROR)
+				}
+			} catch (e: Exception) {
+				NetworkRespond.Error(RespondErrors.NETWORK_ERROR)
+			}
+		}
+
+		return job.await()
+	}
 }
 
 
