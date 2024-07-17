@@ -1,6 +1,6 @@
 package ttt.mardsoul.restaurants.ui.screendetails
 
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,51 +19,41 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import ttt.mardsoul.restaurants.R
-import ttt.mardsoul.restaurants.ui.LoadingScreen
 import ttt.mardsoul.restaurants.ui.components.TitleWithFavouriteRow
 import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
+import ttt.mardsoul.restaurants.utils.DETAILS_SCREEN_TAG
 
 @Composable
 fun RestaurantDetailsScreen(
 	modifier: Modifier = Modifier,
-	viewModel: RestaurantDetailsViewModel = hiltViewModel(),
-	restaurantId: Int
+	organizationDetailUiEntity: OrganizationDetailUiEntity,
+	resetState: () -> Unit,
+	disposableEffectKey: Any = Unit
 ) {
+	Log.d(DETAILS_SCREEN_TAG, "RestaurantDetailsScreen recomposed")
 
-	LaunchedEffect(Unit) {
-		viewModel.getDetails(restaurantId)
+	Column(modifier = modifier) {
+		PhotoPager(
+			modifier = Modifier.height(dimensionResource(R.dimen.image_details_height)),
+			photosListUrl = organizationDetailUiEntity.imageListUrl
+		)
+		HeaderInfo(detailUiEntity = organizationDetailUiEntity)
+		Description(modifier = Modifier.weight(1f), detailUiEntity = organizationDetailUiEntity)
 	}
 
-	val uiState = viewModel.uiState.collectAsState()
-	val context = LocalContext.current
-
-	when (val state = uiState.value) {
-		is DetailsUiState.Loading -> LoadingScreen(modifier)
-		is DetailsUiState.Error -> {
-			Toast.makeText(context, state.error, Toast.LENGTH_SHORT).show()
-		}
-
-		is DetailsUiState.Success -> {
-			Column(modifier = modifier) {
-				PhotoPager(
-					modifier = Modifier.height(dimensionResource(R.dimen.image_details_height)),
-					photosListUrl = state.data.imageListUrl
-				)
-				HeaderInfo(detailUiEntity = state.data)
-				Description(modifier = Modifier.weight(1f), detailUiEntity = state.data)
-			}
+	DisposableEffect(disposableEffectKey) {
+		onDispose {
+			Log.d(DETAILS_SCREEN_TAG, "RestaurantDetailsScreen onDispose")
+			resetState()
 		}
 	}
 }

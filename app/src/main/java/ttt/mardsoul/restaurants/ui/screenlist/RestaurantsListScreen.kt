@@ -19,7 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -29,9 +28,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import ttt.mardsoul.restaurants.R
+import ttt.mardsoul.restaurants.ui.ListUiState
 import ttt.mardsoul.restaurants.ui.LoadingScreen
 import ttt.mardsoul.restaurants.ui.components.TitleWithFavouriteRow
 import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
@@ -39,16 +38,15 @@ import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
 @Composable
 fun RestaurantsListScreen(
 	modifier: Modifier = Modifier,
-	viewModel: RestaurantsListViewModel = hiltViewModel(),
+	uiState: ListUiState,
 	onItemClick: (Int) -> Unit
 ) {
-	val uiState = viewModel.uiState.collectAsState()
 	val context = LocalContext.current
 
-	when (val state = uiState.value) {
+	when (uiState) {
 		is ListUiState.Loading -> LoadingScreen(modifier)
 		is ListUiState.Error -> {
-			Toast.makeText(context, state.error, Toast.LENGTH_SHORT).show()
+			Toast.makeText(context, uiState.error, Toast.LENGTH_SHORT).show()
 		}
 
 		is ListUiState.Success -> {
@@ -56,7 +54,7 @@ fun RestaurantsListScreen(
 				modifier = modifier,
 				verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small)),
 			) {
-				items(items = state.data, key = { it.id }) {
+				items(items = uiState.data, key = { it.id }) {
 					OrganizationCard(
 						onClickCard = { onItemClick(it.id) },
 						organization = it
