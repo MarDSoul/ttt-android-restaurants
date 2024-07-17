@@ -14,7 +14,7 @@ object MapperDetailsToModel : Mapper<RespondDetailsDto, OrganizationEntity> {
 			description = from.detailedInfo ?: "",
 			location = from.location?.address ?: "",
 			cuisines = from.cuisines ?: listOf(),
-			averageCheck = from.averageCheck?.firstOrNull().toString(),
+			averageCheck = from.averageCheck?.firstOrNull()?.toString() ?: "",
 		)
 	}
 }

@@ -14,3 +14,7 @@ val shapes = Shapes(
 		bottomEnd = 8.dp
 	)
 )
+
+val customShapes = Shapes(
+	large = RoundedCornerShape(24.dp)
+)

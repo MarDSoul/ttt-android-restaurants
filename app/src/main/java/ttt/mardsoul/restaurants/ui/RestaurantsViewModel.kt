@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import ttt.mardsoul.restaurants.domain.Gateway
 import ttt.mardsoul.restaurants.domain.NetworkRespond
@@ -34,6 +37,10 @@ class RestaurantsListAndDetailsViewModel @Inject constructor(
 	private val _navigateToDetails = MutableSharedFlow<Unit>()
 	val navigateToDetails: SharedFlow<Unit> = _navigateToDetails.asSharedFlow()
 
+	private val _errorEvent = Channel<ErrorEvent>(capacity = Channel.BUFFERED)
+	val errorEvent: Flow<ErrorEvent>
+		get() = _errorEvent.receiveAsFlow()
+
 	init {
 		getData()
 	}
@@ -49,11 +56,11 @@ class RestaurantsListAndDetailsViewModel @Inject constructor(
 				}
 
 				is NetworkRespond.Error -> {
-					_listUiState.emit(ListUiState.Error(respond.errors.message))
+					_errorEvent.send(ErrorEvent.ErrorMessage(respond.errors.message))
 				}
 
 				else -> {
-					_listUiState.emit(ListUiState.Error(RespondErrors.UNKNOWN_ERROR.message))
+					_errorEvent.send(ErrorEvent.ErrorMessage(RespondErrors.UNKNOWN_ERROR.message))
 				}
 			}
 		}
@@ -71,11 +78,11 @@ class RestaurantsListAndDetailsViewModel @Inject constructor(
 				}
 
 				is NetworkRespond.Error -> {
-					_listUiState.emit(ListUiState.Error(respond.errors.message))
+					_errorEvent.send(ErrorEvent.ErrorMessage(respond.errors.message))
 				}
 
 				else -> {
-					_listUiState.emit(ListUiState.Error(RespondErrors.UNKNOWN_ERROR.message))
+					_errorEvent.send(ErrorEvent.ErrorMessage(RespondErrors.UNKNOWN_ERROR.message))
 				}
 			}
 		}
@@ -90,10 +97,13 @@ class RestaurantsListAndDetailsViewModel @Inject constructor(
 sealed interface ListUiState {
 	data object Loading : ListUiState
 	data class Success(val data: List<OrganizationUiEntity>) : ListUiState
-	data class Error(val error: String) : ListUiState
 }
 
 sealed interface DetailsUiState {
 	data object Empty : DetailsUiState
 	data class Success(val data: OrganizationDetailUiEntity) : DetailsUiState
+}
+
+sealed interface ErrorEvent {
+	data class ErrorMessage(val error: String) : ErrorEvent
 }

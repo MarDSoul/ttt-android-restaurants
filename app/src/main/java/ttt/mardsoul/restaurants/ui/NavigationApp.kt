@@ -1,19 +1,23 @@
 package ttt.mardsoul.restaurants.ui
 
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import ttt.mardsoul.restaurants.R
+import ttt.mardsoul.restaurants.ui.components.ErrorEvent
 import ttt.mardsoul.restaurants.ui.screendetails.RestaurantDetailsScreen
 import ttt.mardsoul.restaurants.ui.screenlist.RestaurantsListScreen
+import ttt.mardsoul.restaurants.utils.ERROR_EVENT_TAG
 import ttt.mardsoul.restaurants.utils.NAVIGATION_TAG
 
 enum class RestaurantScreen(@StringRes val titleId: Int) {
@@ -28,6 +32,13 @@ fun NavigationApp(
 	navController: NavHostController
 ) {
 	val viewModel: RestaurantsListAndDetailsViewModel = hiltViewModel()
+	val context = LocalContext.current
+	ErrorEvent(sideEffectFlow = viewModel.errorEvent) {
+		Log.d(ERROR_EVENT_TAG, "ErrorEvent recomposition ")
+		if (it is ErrorEvent.ErrorMessage) {
+			Toast.makeText(context, it.error, Toast.LENGTH_SHORT).show()
+		}
+	}
 
 	NavHost(navController = navController, startDestination = RestaurantScreen.ListScreen.name) {
 		composable(RestaurantScreen.ListScreen.name) {
@@ -38,7 +49,6 @@ fun NavigationApp(
 				uiState = listUiState,
 				onItemClick = { viewModel.getDetails(it) })
 			Log.d(NAVIGATION_TAG, "RestaurantsListScreen compose")
-
 
 			LaunchedEffect(key1 = Unit) {
 				viewModel.navigateToDetails.collect {

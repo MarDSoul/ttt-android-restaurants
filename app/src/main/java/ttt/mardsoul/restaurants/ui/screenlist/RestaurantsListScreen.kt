@@ -1,6 +1,6 @@
 package ttt.mardsoul.restaurants.ui.screenlist
 
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,8 +31,9 @@ import coil.compose.AsyncImage
 import ttt.mardsoul.restaurants.R
 import ttt.mardsoul.restaurants.ui.ListUiState
 import ttt.mardsoul.restaurants.ui.LoadingScreen
-import ttt.mardsoul.restaurants.ui.components.TitleWithFavouriteRow
+import ttt.mardsoul.restaurants.ui.components.FavouriteIconButton
 import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
+import ttt.mardsoul.restaurants.utils.LIST_SCREEN_TAG
 
 @Composable
 fun RestaurantsListScreen(
@@ -41,13 +41,10 @@ fun RestaurantsListScreen(
 	uiState: ListUiState,
 	onItemClick: (Int) -> Unit
 ) {
-	val context = LocalContext.current
+	Log.d(LIST_SCREEN_TAG, "RestaurantsListScreen: recomposition")
 
 	when (uiState) {
 		is ListUiState.Loading -> LoadingScreen(modifier)
-		is ListUiState.Error -> {
-			Toast.makeText(context, uiState.error, Toast.LENGTH_SHORT).show()
-		}
 
 		is ListUiState.Success -> {
 			LazyColumn(
@@ -57,7 +54,10 @@ fun RestaurantsListScreen(
 				items(items = uiState.data, key = { it.id }) {
 					OrganizationCard(
 						onClickCard = { onItemClick(it.id) },
-						organization = it
+						organization = it,
+						onFavoriteClick = {
+							Log.d(LIST_SCREEN_TAG, "RestaurantsListScreen: onFavoriteClick")
+						}
 					)
 				}
 			}
@@ -70,7 +70,7 @@ fun OrganizationCard(
 	modifier: Modifier = Modifier,
 	organization: OrganizationUiEntity,
 	onClickCard: () -> Unit = {},
-	onClickFavorite: () -> Unit = {}
+	onFavoriteClick: () -> Unit = {}
 ) {
 	Card(
 		modifier = modifier.fillMaxWidth(),
@@ -91,7 +91,7 @@ fun OrganizationCard(
 		)
 		OrganizationCardDescription(
 			organization = organization,
-			onClickFavorite = onClickFavorite
+			onFavoriteClick = onFavoriteClick
 		)
 	}
 }
@@ -100,7 +100,7 @@ fun OrganizationCard(
 fun OrganizationCardDescription(
 	modifier: Modifier = Modifier,
 	organization: OrganizationUiEntity,
-	onClickFavorite: () -> Unit = {}
+	onFavoriteClick: () -> Unit = {}
 ) {
 	Column(
 		modifier = modifier.padding(
@@ -110,11 +110,17 @@ fun OrganizationCardDescription(
 			bottom = dimensionResource(R.dimen.padding_medium)
 		)
 	) {
-		TitleWithFavouriteRow(
-			name = organization.name,
-			isFavorite = organization.isFavorite,
-			onFavoriteClick = onClickFavorite
-		)
+		Row(
+			modifier = modifier.fillMaxWidth(),
+			horizontalArrangement = Arrangement.SpaceBetween,
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Text(text = organization.name, style = MaterialTheme.typography.titleMedium)
+			FavouriteIconButton(
+				isFavorite = organization.isFavorite,
+				onFavoriteClick = onFavoriteClick
+			)
+		}
 		Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
 			RatingIcon(rating = organization.rating)
 			Spacer(modifier = Modifier.size(dimensionResource(R.dimen.padding_small)))
