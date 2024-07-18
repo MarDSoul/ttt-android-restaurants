@@ -1,9 +1,10 @@
 package ttt.mardsoul.restaurants.data
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
-import ttt.mardsoul.restaurants.di.ApplicationScope
+import kotlinx.coroutines.withContext
+import retrofit2.Response
+import ttt.mardsoul.restaurants.data.dtoentities.detailsresponse.RespondDetailsDto
+import ttt.mardsoul.restaurants.data.dtoentities.listresponse.RespondDto
 import ttt.mardsoul.restaurants.di.IoDispatcher
 import ttt.mardsoul.restaurants.domain.Gateway
 import ttt.mardsoul.restaurants.domain.NetworkRespond
@@ -14,37 +15,39 @@ import javax.inject.Inject
 
 class GatewayImpl @Inject constructor(
 	private val api: RestaurantsApi,
-	@ApplicationScope private val applicationScope: CoroutineScope,
 	@IoDispatcher private val dispatcherIo: CoroutineDispatcher
 ) : Gateway {
 
 	override suspend fun getRestaurants(): NetworkRespond {
-		val job = applicationScope.async(dispatcherIo) {
-			try {
-				val networkResponse = api.getRestaurants()
-				if (networkResponse.isSuccessful && networkResponse.body() != null) {
-					networkResponse.body()!!.data
-						?.map { MapperDtoToModel.map(it!!) }
-						?.let { NetworkRespond.SuccessList(it) }
-				} else {
-					NetworkRespond.Error(RespondErrors.SERVER_ERROR)
-				}
-			} catch (e: Exception) {
-				NetworkRespond.Error(RespondErrors.NETWORK_ERROR)
-			}
-		}
-
-		return job.await()!!
+		return getData { api.getRestaurants() }
 	}
 
 	override suspend fun getRestaurant(id: Int): NetworkRespond {
-		val job = applicationScope.async(dispatcherIo) {
+		return getData { api.getRestaurant(id) }
+	}
+
+	private suspend inline fun <reified T> getData(crossinline action: suspend () -> Response<T>): NetworkRespond =
+		withContext(dispatcherIo) {
 			try {
-				val networkResponse = api.getRestaurant(id)
+				val networkResponse = action.invoke()
 				if (networkResponse.isSuccessful && networkResponse.body() != null) {
-					networkResponse.body()!!
-						.let { MapperDetailsToModel.map(it) }
-						.let { NetworkRespond.SuccessDetails(it) }
+					when (T::class) {
+						RespondDto::class -> {
+							(networkResponse.body()!! as RespondDto).data
+								.map { MapperDtoToModel.map(it!!) }
+								.let { NetworkRespond.SuccessList(it) }
+						}
+
+						RespondDetailsDto::class -> {
+							(networkResponse.body()!! as RespondDetailsDto)
+								.let { MapperDetailsToModel.map(it) }
+								.let { NetworkRespond.SuccessDetails(it) }
+						}
+
+						else -> {
+							NetworkRespond.Error(RespondErrors.UNKNOWN_ERROR)
+						}
+					}
 				} else {
 					NetworkRespond.Error(RespondErrors.SERVER_ERROR)
 				}
@@ -52,9 +55,6 @@ class GatewayImpl @Inject constructor(
 				NetworkRespond.Error(RespondErrors.NETWORK_ERROR)
 			}
 		}
-
-		return job.await()
-	}
 }
 
 

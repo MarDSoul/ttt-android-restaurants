@@ -2,10 +2,11 @@ package ttt.mardsoul.restaurants.domain
 
 import ttt.mardsoul.restaurants.domain.entities.OrganizationEntity
 
-sealed class NetworkRespond {
-	class SuccessList(val data: List<OrganizationEntity>) : NetworkRespond()
-	class SuccessDetails(val data: OrganizationEntity) : NetworkRespond()
-	class Error(val errors: RespondErrors) : NetworkRespond()
+sealed interface NetworkRespond {
+	class SuccessList(val data: List<OrganizationEntity>) : NetworkRespond
+	class SuccessDetails(val data: OrganizationEntity) : NetworkRespond
+	data object SuccessFavourite : NetworkRespond
+	class Error(val errors: RespondErrors) : NetworkRespond
 }
 
 enum class RespondErrors(val message: String) {

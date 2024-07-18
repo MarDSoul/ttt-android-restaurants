@@ -7,7 +7,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,9 +26,9 @@ enum class RestaurantScreen(@StringRes val titleId: Int) {
 @Composable
 fun NavigationApp(
 	modifier: Modifier = Modifier,
-	navController: NavHostController
+	navController: NavHostController,
+	viewModel: RestaurantsViewModel
 ) {
-	val viewModel: RestaurantsListAndDetailsViewModel = hiltViewModel()
 	val context = LocalContext.current
 	ErrorEvent(sideEffectFlow = viewModel.errorEvent) {
 		TestLogs.show(TestTags.ERROR_EVENT, "ErrorEvent: recomposition")
@@ -45,7 +44,11 @@ fun NavigationApp(
 			RestaurantsListScreen(
 				modifier = modifier,
 				uiState = listUiState,
-				onItemClick = { viewModel.getDetails(it) })
+				onItemClick = { viewModel.getDetails(it) },
+				onFavoriteClick = { id, isFavorite ->
+					viewModel.onFavoriteClick(id, isFavorite)
+				}
+			)
 
 			LaunchedEffect(key1 = Unit) {
 				viewModel.navigateToDetails.collect {
@@ -63,7 +66,10 @@ fun NavigationApp(
 					modifier = modifier,
 					organizationDetailUiEntity = (detailsUiState as DetailsUiState.Success).data,
 					resetState = { viewModel.resetDetailsState() },
-					disposableEffectKey = RestaurantScreen.DetailsScreen.name
+					disposableEffectKey = RestaurantScreen.DetailsScreen.name,
+					onFavoriteClick = { id, isFavorite ->
+						viewModel.onFavoriteClick(id, isFavorite)
+					}
 				)
 				TestLogs.show(TestTags.NAVIGATION, "RestaurantDetailsScreen compose")
 			}

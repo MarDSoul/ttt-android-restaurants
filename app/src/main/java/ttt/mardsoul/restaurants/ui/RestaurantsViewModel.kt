@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ttt.mardsoul.restaurants.di.DefaultDispatcher
 import ttt.mardsoul.restaurants.domain.FavoriteUseCase
@@ -28,13 +30,17 @@ import ttt.mardsoul.restaurants.utils.MapperModelToUi
 import javax.inject.Inject
 
 @HiltViewModel
-class RestaurantsListAndDetailsViewModel @Inject constructor(
+class RestaurantsViewModel @Inject constructor(
 	private val gateway: Gateway,
 	private val favoriteUseCase: FavoriteUseCase,
 	@DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
 	private lateinit var restaurantsList: List<OrganizationUiEntity>
+	private lateinit var restaurantsFilteredList: List<OrganizationUiEntity>
+
+	private val _appBarState = MutableStateFlow(AppBarState())
+	val appBarState: StateFlow<AppBarState> = _appBarState.asStateFlow()
 
 	private val _listUiState = MutableStateFlow<ListUiState>(ListUiState.Loading)
 	val listUiState: StateFlow<ListUiState> = _listUiState.asStateFlow()
@@ -54,21 +60,23 @@ class RestaurantsListAndDetailsViewModel @Inject constructor(
 
 	private fun getData() {
 		viewModelScope.launch {
+			TestLogs.show(TestTags.VIEW_MODEL, "ViewModel: getList")
 			_listUiState.emit(ListUiState.Loading)
 			when (val respond = gateway.getRestaurants()) {
 				is NetworkRespond.SuccessList -> {
 					val data = respond.data.map { MapperModelToUi.map(it) }
 					restaurantsList = data
+					updateCountFavorite()
 					_listUiState.emit(ListUiState.Success(restaurantsList))
 					TestLogs.show(TestTags.VIEW_MODEL, "ViewModel: list data emitted")
 				}
 
 				is NetworkRespond.Error -> {
-					_errorEvent.send(ErrorEvent.ErrorMessage(respond.errors.message))
+					sendErrorEvent(respond.errors)
 				}
 
 				else -> {
-					_errorEvent.send(ErrorEvent.ErrorMessage(RespondErrors.UNKNOWN_ERROR.message))
+					sendErrorEvent(RespondErrors.UNKNOWN_ERROR)
 				}
 			}
 		}
@@ -86,11 +94,11 @@ class RestaurantsListAndDetailsViewModel @Inject constructor(
 				}
 
 				is NetworkRespond.Error -> {
-					_errorEvent.send(ErrorEvent.ErrorMessage(respond.errors.message))
+					sendErrorEvent(respond.errors)
 				}
 
 				else -> {
-					_errorEvent.send(ErrorEvent.ErrorMessage(RespondErrors.UNKNOWN_ERROR.message))
+					sendErrorEvent(RespondErrors.UNKNOWN_ERROR)
 				}
 			}
 		}
@@ -101,17 +109,96 @@ class RestaurantsListAndDetailsViewModel @Inject constructor(
 		TestLogs.show(TestTags.VIEW_MODEL, "ViewModel: resetDetailsState")
 	}
 
-	fun filterList(isFavoritesSorted: Boolean) {
+	private suspend fun sendErrorEvent(error: RespondErrors) {
+		_errorEvent.send(ErrorEvent.ErrorMessage(error.message))
+	}
+
+	fun filterList() {
 		viewModelScope.launch(defaultDispatcher) {
+			val isFavoritesSorted = _listUiState.value is ListUiState.Success &&
+					(_listUiState.value as ListUiState.Success).isFavoritesSorted
 			if (!isFavoritesSorted) {
 				val sortedList = restaurantsList.filter { it.isFavorite }
 				_listUiState.emit(ListUiState.Success(sortedList, true))
 			} else {
 				_listUiState.emit(ListUiState.Success(restaurantsList, false))
 			}
+			updateIsFavoritesFiltered()
 		}
 	}
 
+	fun onFavoriteClick(id: Int, currentFavorite: Boolean) {
+		viewModelScope.launch {
+			var tmpList: List<OrganizationUiEntity>? = restaurantsList
+			_listUiState.update { curState ->
+				val list = restaurantsList.toMutableList()
+				list.indexOfFirst { it.id == id }.let { index ->
+					if (index != -1) {
+						list[index] = list[index].copy(isFavorite = !currentFavorite)
+					}
+				}
+				restaurantsList = list.toList()
+				updateFilteredList()
+				if (_appBarState.value.isFavoritesFiltered) {
+					(curState as ListUiState.Success).copy(data = restaurantsFilteredList)
+				} else {
+					(curState as ListUiState.Success).copy(data = restaurantsList)
+				}
+			}
+
+			var copyDetails: DetailsUiState.Success? = null
+			_detailsUiState.update { curState ->
+				if (curState is DetailsUiState.Success) {
+					copyDetails = curState
+					curState.copy(data = curState.data.copy(isFavorite = !currentFavorite))
+				} else {
+					curState
+				}
+			}
+
+			updateCountFavorite()
+
+			val respond = favoriteUseCase.clickOnFavorite(id, currentFavorite)
+			if (respond is NetworkRespond.SuccessFavourite) {
+				tmpList = null
+				copyDetails = null
+			} else {
+				delay(3_000L) // TODO("Imitation network delay after error")
+				_errorEvent.send(ErrorEvent.ErrorMessage(RespondErrors.UNKNOWN_ERROR.message))
+
+				restaurantsList = tmpList!!
+				updateFilteredList()
+				_listUiState.update { curState ->
+					if (_appBarState.value.isFavoritesFiltered) {
+						(curState as ListUiState.Success).copy(data = restaurantsFilteredList)
+					} else {
+						(curState as ListUiState.Success).copy(data = restaurantsList)
+					}
+				}
+
+				copyDetails?.let {
+					_detailsUiState.update { _ -> it }
+				}
+				updateCountFavorite()
+			}
+		}
+	}
+
+	private fun updateCountFavorite() {
+		_appBarState.update { curState ->
+			curState.copy(countFavorite = restaurantsList.count { it.isFavorite })
+		}
+	}
+
+	private fun updateIsFavoritesFiltered() {
+		_appBarState.update { curState ->
+			curState.copy(isFavoritesFiltered = !curState.isFavoritesFiltered)
+		}
+	}
+
+	private fun updateFilteredList() {
+		restaurantsFilteredList = restaurantsList.filter { it.isFavorite }
+	}
 }
 
 sealed interface ListUiState {
@@ -130,3 +217,8 @@ sealed interface DetailsUiState {
 sealed interface ErrorEvent {
 	data class ErrorMessage(val error: String) : ErrorEvent
 }
+
+data class AppBarState(
+	val countFavorite: Int = 0,
+	val isFavoritesFiltered: Boolean = false
+)

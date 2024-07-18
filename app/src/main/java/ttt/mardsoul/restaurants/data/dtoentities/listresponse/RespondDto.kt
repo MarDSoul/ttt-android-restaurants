@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class RespondDto(
 	@SerializedName("data")
-	val `data`: List<DataDto?>?,
+	val `data`: List<DataDto?>,
 	@SerializedName("meta")
 	val meta: MetaDto?
 )

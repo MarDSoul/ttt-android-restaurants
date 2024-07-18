@@ -22,10 +22,10 @@ interface RestaurantsApi {
 
 	@Headers("Authorization: Token $TOKEN")
 	@POST("internship/organization/{id}/favorite/")
-	suspend fun addToFavorite(@Path("id") id: Int): Response<RespondDto>
+	suspend fun addToFavorite(@Path("id") id: Int): Response<Any?>
 
 	@Headers("Authorization: Token $TOKEN")
 	@DELETE("internship/organization/{id}/favorite/")
-	suspend fun removeFromFavorite(@Path("id") id: Int): Response<RespondDto>
+	suspend fun removeFromFavorite(@Path("id") id: Int): Response<Any?>
 
 }

@@ -46,6 +46,7 @@ import ttt.mardsoul.restaurants.ui.theme.customShapes
 fun RestaurantDetailsScreen(
 	modifier: Modifier = Modifier,
 	organizationDetailUiEntity: OrganizationDetailUiEntity,
+	onFavoriteClick: (Int, Boolean) -> Unit,
 	resetState: () -> Unit,
 	disposableEffectKey: Any = Unit
 ) {
@@ -58,7 +59,14 @@ fun RestaurantDetailsScreen(
 				.fillMaxWidth(),
 			photosListUrl = organizationDetailUiEntity.imageListUrl
 		)
-		HeaderInfo(detailUiEntity = organizationDetailUiEntity)
+		HeaderInfo(
+			detailUiEntity = organizationDetailUiEntity,
+			onFavoriteClick = {
+				onFavoriteClick(
+					organizationDetailUiEntity.id,
+					organizationDetailUiEntity.isFavorite
+				)
+			})
 		Description(modifier = Modifier.weight(1f), detailUiEntity = organizationDetailUiEntity)
 	}
 
@@ -115,7 +123,7 @@ fun PhotoPager(
 fun HeaderInfo(
 	modifier: Modifier = Modifier,
 	detailUiEntity: OrganizationDetailUiEntity,
-	onFavoriteClick: () -> Unit = {}
+	onFavoriteClick: () -> Unit
 ) {
 	Column(modifier = modifier.padding(dimensionResource(R.dimen.padding_medium))) {
 		Row(
@@ -207,10 +215,11 @@ fun Description(
 @Composable
 fun StarRatingBar(
 	modifier: Modifier = Modifier,
-	selectedColor: Color = MaterialTheme.colorScheme.primary,
-	unselectedColor: Color = Color.Gray,
-	rating: Float = 0f
+	rating: Float
 ) {
+	val selectedColor: Color = MaterialTheme.colorScheme.primary
+	val unselectedColor: Color = Color.Gray
+
 	Row(modifier = modifier.wrapContentWidth()) {
 		for (i in 1..5) {
 			when {
@@ -249,8 +258,9 @@ fun StartRatingBarPreview(modifier: Modifier = Modifier) {
 fun DetailScreenPreview(modifier: Modifier = Modifier) {
 	RestaurantsTheme {
 		RestaurantDetailsScreen(
-			organizationDetailUiEntity = MockData.organizationDetailUiEntity,
-			resetState = { }
+			organizationDetailUiEntity = MockData.mockDetailUiEntity,
+			resetState = { },
+			onFavoriteClick = { _, _ -> }
 		)
 	}
 }

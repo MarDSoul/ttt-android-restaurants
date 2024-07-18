@@ -40,7 +40,8 @@ import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
 fun RestaurantsListScreen(
 	modifier: Modifier = Modifier,
 	uiState: ListUiState,
-	onItemClick: (Int) -> Unit
+	onItemClick: (Int) -> Unit,
+	onFavoriteClick: (Int, Boolean) -> Unit
 ) {
 	TestLogs.show(TestTags.LIST_SCREEN, "RestaurantsListScreen: recomposition")
 
@@ -56,12 +57,7 @@ fun RestaurantsListScreen(
 					OrganizationCard(
 						onClickCard = { onItemClick(it.id) },
 						organization = it,
-						onFavoriteClick = {
-							TestLogs.show(
-								TestTags.LIST_SCREEN,
-								"RestaurantsListScreen: onFavouriteClick"
-							)
-						}
+						onFavoriteClick = { onFavoriteClick(it.id, it.isFavorite) }
 					)
 				}
 			}
@@ -73,8 +69,8 @@ fun RestaurantsListScreen(
 fun OrganizationCard(
 	modifier: Modifier = Modifier,
 	organization: OrganizationUiEntity,
-	onClickCard: () -> Unit = {},
-	onFavoriteClick: () -> Unit = {}
+	onClickCard: () -> Unit,
+	onFavoriteClick: () -> Unit
 ) {
 	Card(
 		modifier = modifier.fillMaxWidth(),
@@ -104,7 +100,7 @@ fun OrganizationCard(
 fun OrganizationCardDescription(
 	modifier: Modifier = Modifier,
 	organization: OrganizationUiEntity,
-	onFavoriteClick: () -> Unit = {}
+	onFavoriteClick: () -> Unit
 ) {
 	Column(
 		modifier = modifier.padding(
@@ -158,6 +154,20 @@ fun RatingIcon(
 @Composable
 fun ListItemCardPreview() {
 	RestaurantsTheme {
-		OrganizationCard(organization = MockData.organizationUiEntity)
+		OrganizationCard(
+			organization = MockData.mockUiEntity,
+			onClickCard = {},
+			onFavoriteClick = {})
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RestaurantsListScreenPreview() {
+	RestaurantsTheme {
+		RestaurantsListScreen(
+			uiState = ListUiState.Success(MockData.mockUiEntityList),
+			onItemClick = {},
+			onFavoriteClick = { _, _ -> })
 	}
 }

@@ -1,11 +1,11 @@
 package ttt.mardsoul.restaurants.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -15,12 +15,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ttt.mardsoul.restaurants.R
@@ -36,16 +37,26 @@ fun RestaurantsApp(modifier: Modifier = Modifier) {
 		backStackEntry?.destination?.route ?: RestaurantScreen.ListScreen.name
 	)
 
+	val viewModel: RestaurantsViewModel = hiltViewModel()
+	val appBarState by viewModel.appBarState.collectAsState()
+
 	Scaffold(
 		modifier = modifier.fillMaxSize(),
 		topBar = {
 			RestaurantsTopBar(
 				currentScreen = currentScreen,
+				appBarState = appBarState,
 				canNavigateBack = navController.previousBackStackEntry != null,
-				onNavigateBack = { navController.navigateUp() })
+				onNavigateBack = { navController.navigateUp() },
+				onClickFilter = { viewModel.filterList() }
+			)
 		}
 	) { paddingValues ->
-		NavigationApp(modifier = Modifier.padding(paddingValues), navController = navController)
+		NavigationApp(
+			modifier = Modifier.padding(paddingValues),
+			navController = navController,
+			viewModel = viewModel
+		)
 	}
 }
 
@@ -53,13 +64,16 @@ fun RestaurantsApp(modifier: Modifier = Modifier) {
 @Composable
 fun RestaurantsTopBar(
 	modifier: Modifier = Modifier,
+	appBarState: AppBarState,
 	currentScreen: RestaurantScreen,
 	canNavigateBack: Boolean = false,
-	onNavigateBack: () -> Unit = {}
+	onNavigateBack: () -> Unit = {},
+	onClickFilter: () -> Unit = {}
 ) {
 	TestLogs.show(
 		TestTags.TOP_APP_BAR,
-		"RestaurantsTopBar: recomposition with ${currentScreen.name}"
+		"RestaurantsTopBar: recomposition with ${currentScreen.name}, " +
+				"count: ${appBarState.countFavorite}"
 	)
 	CenterAlignedTopAppBar(
 		title = {
@@ -76,7 +90,14 @@ fun RestaurantsTopBar(
 				}
 		},
 		actions = {
-			FavouriteIcon(modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)))
+			if (currentScreen != RestaurantScreen.DetailsScreen) {
+				FavouriteIcon(
+					modifier = Modifier.padding(dimensionResource(R.dimen.padding_small)),
+					countFavorite = appBarState.countFavorite,
+					isFiltered = appBarState.isFavoritesFiltered,
+					onClick = onClickFilter
+				)
+			}
 		},
 		colors = TopAppBarColors(
 			containerColor = MaterialTheme.colorScheme.background,
@@ -91,17 +112,25 @@ fun RestaurantsTopBar(
 @Composable
 fun FavouriteIcon(
 	modifier: Modifier = Modifier,
-	count: Int = 0
+	countFavorite: Int,
+	isFiltered: Boolean,
+	onClick: () -> Unit
 ) {
-	Box(modifier = modifier, contentAlignment = Alignment.Center) {
+	TestLogs.show(
+		TestTags.TOP_APP_BAR,
+		"FavouriteIcon: recomposition, " +
+				"count: $countFavorite, " +
+				"isFiltered: $isFiltered"
+	)
+	IconButton(onClick = onClick, modifier = modifier) {
 		Icon(
-			imageVector = Icons.Filled.Favorite,
+			imageVector = if (isFiltered) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
 			contentDescription = stringResource(R.string.favourite_cd),
 			tint = MaterialTheme.colorScheme.primary
 		)
 		Text(
-			text = count.toString(),
-			color = MaterialTheme.colorScheme.onPrimary,
+			text = countFavorite.toString(),
+			color = if (isFiltered) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
 			style = MaterialTheme.typography.labelSmall
 		)
 	}
@@ -111,14 +140,33 @@ fun FavouriteIcon(
 @Composable
 fun FavouriteIconPreview(modifier: Modifier = Modifier) {
 	RestaurantsTheme {
-		FavouriteIcon()
+		FavouriteIcon(
+			countFavorite = 2,
+			isFiltered = true,
+			onClick = {}
+		)
 	}
 }
 
-@Preview(showSystemUi = true, showBackground = true)
+@Preview(showBackground = true)
 @Composable
 fun RestaurantsTopBarPreview(modifier: Modifier = Modifier) {
 	RestaurantsTheme {
-		RestaurantsTopBar(currentScreen = RestaurantScreen.ListScreen)
+		RestaurantsTopBar(
+			appBarState = AppBarState(countFavorite = 2, isFavoritesFiltered = true),
+			currentScreen = RestaurantScreen.ListScreen
+		)
+	}
+}
+
+@Preview(showBackground = true)
+@Composable
+fun RestaurantsTopBarDetailsPreview(modifier: Modifier = Modifier) {
+	RestaurantsTheme {
+		RestaurantsTopBar(
+			appBarState = AppBarState(),
+			canNavigateBack = true,
+			currentScreen = RestaurantScreen.DetailsScreen
+		)
 	}
 }
