@@ -22,7 +22,6 @@ import ttt.mardsoul.restaurants.ui.screenlist.RestaurantsListScreen
 enum class RestaurantScreen(@StringRes val titleId: Int) {
 	ListScreen(R.string.list_app_bar_title),
 	DetailsScreen(R.string.details_app_bar_title)
-
 }
 
 @Composable

@@ -15,11 +15,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ttt.mardsoul.restaurants.R
 import ttt.mardsoul.restaurants.mock.TestLogs
@@ -29,9 +31,9 @@ import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
 @Composable
 fun RestaurantsApp(modifier: Modifier = Modifier) {
 	val navController = rememberNavController()
-
+	val backStackEntry by navController.currentBackStackEntryAsState()
 	val currentScreen = RestaurantScreen.valueOf(
-		navController.currentBackStackEntry?.destination?.route ?: RestaurantScreen.ListScreen.name
+		backStackEntry?.destination?.route ?: RestaurantScreen.ListScreen.name
 	)
 
 	Scaffold(
