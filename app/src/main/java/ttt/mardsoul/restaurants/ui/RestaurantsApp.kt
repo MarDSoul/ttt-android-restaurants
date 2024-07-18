@@ -22,6 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import ttt.mardsoul.restaurants.R
+import ttt.mardsoul.restaurants.mock.TestLogs
+import ttt.mardsoul.restaurants.mock.TestTags
 import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
 
 @Composable
@@ -53,7 +55,10 @@ fun RestaurantsTopBar(
 	canNavigateBack: Boolean = false,
 	onNavigateBack: () -> Unit = {}
 ) {
-
+	TestLogs.show(
+		TestTags.TOP_APP_BAR,
+		"RestaurantsTopBar: recomposition with ${currentScreen.name}"
+	)
 	CenterAlignedTopAppBar(
 		title = {
 			Text(text = stringResource(currentScreen.titleId))

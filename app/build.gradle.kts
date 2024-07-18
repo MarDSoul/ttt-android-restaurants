@@ -5,7 +5,6 @@ plugins {
 	alias(libs.plugins.jetbrains.kotlin.android)
 	alias(libs.plugins.hilt)
 	alias(libs.plugins.ksp)
-	alias(libs.plugins.serialization)
 }
 
 val apikey = rootProject.file("apikey.properties")
@@ -62,6 +61,7 @@ dependencies {
 	implementation(libs.androidx.lifecycle.runtime.ktx)
 	implementation(libs.androidx.activity.compose)
 	implementation(libs.androidx.lifecycle.viewmodel)
+	implementation(libs.androidx.lifecycle.runtime.compose)
 
 	implementation(platform(libs.androidx.compose.bom))
 	implementation(libs.androidx.ui)
@@ -81,5 +81,4 @@ dependencies {
 
 	implementation(libs.navigation.compose)
 	implementation(libs.hilt.navigation.compose)
-	implementation(libs.serialization.jetbrains)
 }

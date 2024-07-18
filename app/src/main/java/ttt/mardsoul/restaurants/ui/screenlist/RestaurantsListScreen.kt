@@ -1,6 +1,5 @@
 package ttt.mardsoul.restaurants.ui.screenlist
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,11 +28,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ttt.mardsoul.restaurants.R
+import ttt.mardsoul.restaurants.mock.MockData
+import ttt.mardsoul.restaurants.mock.TestLogs
+import ttt.mardsoul.restaurants.mock.TestTags
 import ttt.mardsoul.restaurants.ui.ListUiState
 import ttt.mardsoul.restaurants.ui.LoadingScreen
 import ttt.mardsoul.restaurants.ui.components.FavouriteIconButton
 import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
-import ttt.mardsoul.restaurants.utils.LIST_SCREEN_TAG
 
 @Composable
 fun RestaurantsListScreen(
@@ -41,7 +42,7 @@ fun RestaurantsListScreen(
 	uiState: ListUiState,
 	onItemClick: (Int) -> Unit
 ) {
-	Log.d(LIST_SCREEN_TAG, "RestaurantsListScreen: recomposition")
+	TestLogs.show(TestTags.LIST_SCREEN, "RestaurantsListScreen: recomposition")
 
 	when (uiState) {
 		is ListUiState.Loading -> LoadingScreen(modifier)
@@ -56,7 +57,10 @@ fun RestaurantsListScreen(
 						onClickCard = { onItemClick(it.id) },
 						organization = it,
 						onFavoriteClick = {
-							Log.d(LIST_SCREEN_TAG, "RestaurantsListScreen: onFavoriteClick")
+							TestLogs.show(
+								TestTags.LIST_SCREEN,
+								"RestaurantsListScreen: onFavouriteClick"
+							)
 						}
 					)
 				}
@@ -153,17 +157,7 @@ fun RatingIcon(
 @Preview()
 @Composable
 fun ListItemCardPreview() {
-
-	val organizationUiEntity = OrganizationUiEntity(
-		id = 1,
-		imageUrl = "https://s3-alpha-sig.figma.com/img/5a48/7afd/dde69baf653722e02cf712993cfe437a?Expires=1722211200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=GmavoSw6V6Xr2uuUSyP0Z8w~~~4c84-VpU8cCqXNLR8w2hVPR0R1jM72s1rEav3eYz3B1ZcMPp0GPhSHboM-m~VEiAduetdIlJ9Sz-rvWWrzEHKt~-b9IWgmEuSnPSuOP7zOEqdjNnRGlaElgtkttaztpjF9TBwSZKqmhQOFja92uCJnJlijf4uVc49F-mtyfhJUuMT8EdWsfSYhkvhXGxD29m0NyZgiwiIgS6XvUZTTXi64TfoP8VP0IKnGAVsZo9yUr7f-yKQR4405YzcWhORPk2jgpq5izY3aDT9E5xIWcEwX8bH2~omnukUx9z-S1J9gDWl5ntL~jAi2twR2cw__",
-		name = "Restaurant Name",
-		isFavorite = false,
-		rating = 4.5f,
-		description = "Long description of restaurant, long description of restaurant, long description of restaurant"
-	)
-
 	RestaurantsTheme {
-		OrganizationCard(organization = organizationUiEntity)
+		OrganizationCard(organization = MockData.organizationUiEntity)
 	}
 }

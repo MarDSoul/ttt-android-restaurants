@@ -1,6 +1,5 @@
 package ttt.mardsoul.restaurants.ui
 
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
@@ -14,11 +13,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import ttt.mardsoul.restaurants.R
+import ttt.mardsoul.restaurants.mock.TestLogs
+import ttt.mardsoul.restaurants.mock.TestTags
 import ttt.mardsoul.restaurants.ui.components.ErrorEvent
 import ttt.mardsoul.restaurants.ui.screendetails.RestaurantDetailsScreen
 import ttt.mardsoul.restaurants.ui.screenlist.RestaurantsListScreen
-import ttt.mardsoul.restaurants.utils.ERROR_EVENT_TAG
-import ttt.mardsoul.restaurants.utils.NAVIGATION_TAG
 
 enum class RestaurantScreen(@StringRes val titleId: Int) {
 	ListScreen(R.string.list_app_bar_title),
@@ -34,7 +33,7 @@ fun NavigationApp(
 	val viewModel: RestaurantsListAndDetailsViewModel = hiltViewModel()
 	val context = LocalContext.current
 	ErrorEvent(sideEffectFlow = viewModel.errorEvent) {
-		Log.d(ERROR_EVENT_TAG, "ErrorEvent recomposition ")
+		TestLogs.show(TestTags.ERROR_EVENT, "ErrorEvent: recomposition")
 		if (it is ErrorEvent.ErrorMessage) {
 			Toast.makeText(context, it.error, Toast.LENGTH_SHORT).show()
 		}
@@ -48,11 +47,10 @@ fun NavigationApp(
 				modifier = modifier,
 				uiState = listUiState,
 				onItemClick = { viewModel.getDetails(it) })
-			Log.d(NAVIGATION_TAG, "RestaurantsListScreen compose")
 
 			LaunchedEffect(key1 = Unit) {
 				viewModel.navigateToDetails.collect {
-					Log.d(NAVIGATION_TAG, "LaunchedEffect: navigate to details")
+					TestLogs.show(TestTags.NAVIGATION, "LaunchedEffect: navigate to details")
 					navController.navigate(RestaurantScreen.DetailsScreen.name) {
 						popUpTo(RestaurantScreen.ListScreen.name) { saveState = true }
 					}
@@ -68,7 +66,7 @@ fun NavigationApp(
 					resetState = { viewModel.resetDetailsState() },
 					disposableEffectKey = RestaurantScreen.DetailsScreen.name
 				)
-				Log.d(NAVIGATION_TAG, "RestaurantDetailsScreen compose")
+				TestLogs.show(TestTags.NAVIGATION, "RestaurantDetailsScreen compose")
 			}
 		}
 	}

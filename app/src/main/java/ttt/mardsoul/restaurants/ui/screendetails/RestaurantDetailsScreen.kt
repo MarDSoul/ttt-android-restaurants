@@ -1,6 +1,6 @@
 package ttt.mardsoul.restaurants.ui.screendetails
 
-import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,10 +35,12 @@ import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
 import ttt.mardsoul.restaurants.R
+import ttt.mardsoul.restaurants.mock.MockData
+import ttt.mardsoul.restaurants.mock.TestLogs
+import ttt.mardsoul.restaurants.mock.TestTags
 import ttt.mardsoul.restaurants.ui.components.FavouriteIconButton
 import ttt.mardsoul.restaurants.ui.theme.RestaurantsTheme
 import ttt.mardsoul.restaurants.ui.theme.customShapes
-import ttt.mardsoul.restaurants.utils.DETAILS_SCREEN_TAG
 
 @Composable
 fun RestaurantDetailsScreen(
@@ -47,7 +49,7 @@ fun RestaurantDetailsScreen(
 	resetState: () -> Unit,
 	disposableEffectKey: Any = Unit
 ) {
-	Log.d(DETAILS_SCREEN_TAG, "RestaurantDetailsScreen recomposed")
+	TestLogs.show(TestTags.DETAILS_SCREEN, "RestaurantDetailsScreen: recomposition")
 
 	Column(modifier = modifier) {
 		PhotoPager(
@@ -62,12 +64,13 @@ fun RestaurantDetailsScreen(
 
 	DisposableEffect(disposableEffectKey) {
 		onDispose {
-			Log.d(DETAILS_SCREEN_TAG, "RestaurantDetailsScreen onDispose")
+			TestLogs.show(TestTags.DETAILS_SCREEN, "RestaurantDetailsScreen: onDispose")
 			resetState()
 		}
 	}
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PhotoPager(
 	modifier: Modifier = Modifier,
@@ -89,7 +92,7 @@ fun PhotoPager(
 	HorizontalPager(
 		state = pagerState,
 		modifier = modifier,
-		beyondViewportPageCount = 2,
+		beyondBoundsPageCount = 2,
 		pageSpacing = dimensionResource(R.dimen.padding_small),
 		contentPadding = contentPadding
 	) { page ->
@@ -244,46 +247,9 @@ fun StartRatingBarPreview(modifier: Modifier = Modifier) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DetailScreenPreview(modifier: Modifier = Modifier) {
-
-	val mockData = OrganizationDetailUiEntity(
-		id = 0,
-		name = "Restaurant Name",
-		location = "11, Some street, Some city, Some country",
-		cuisines = listOf("Short text", "Short text", "Short text", "Short text"),
-		description = "Very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description " +
-				"very-very-very-very-long-description",
-		imageListUrl = listOf(),
-		rating = 5f,
-		averageCheck = "$ 150",
-		isFavorite = true
-	)
-
 	RestaurantsTheme {
 		RestaurantDetailsScreen(
-			organizationDetailUiEntity = mockData,
+			organizationDetailUiEntity = MockData.organizationDetailUiEntity,
 			resetState = { }
 		)
 	}
