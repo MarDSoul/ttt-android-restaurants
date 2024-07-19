@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="padding_zero">0.dp</dimen>
+    <dimen name="padding_small">8.dp</dimen>
+    <dimen name="padding_normal">14.dp</dimen>
+    <dimen name="padding_medium">16.dp</dimen>
+    <dimen name="padding_large">24.dp</dimen>
+
+    <dimen name="image_list_height">160.dp</dimen>
+    <dimen name="image_details_height">250.dp</dimen>
+</resources>

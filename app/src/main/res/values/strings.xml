@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Restaurants</string>
+    <!--    screen titles-->
+    <string name="list_app_bar_title">Рестораны</string>
+    <string name="details_app_bar_title">Ресторан</string>
+
+    <!--    icons cd-->
+    <string name="navigate_back_cd">Назад</string>
+    <string name="favourite_cd">Избранное</string>
+    <string name="rating_cd">Рейтинг</string>
+
+    <!--    details-->
+    <string name="location">Расположение</string>
+    <string name="cuisines">Кухня</string>
+    <string name="description">Описание</string>
 </resources>
